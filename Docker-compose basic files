@@ -1,0 +1,19 @@
+---
+services:
+  movie:
+    container_name: moviecontainer
+    image: shaikmustafa/paytm:movie 
+    ports:
+      - "1122:80"
+
+  bus:
+    container_name: buscontainer
+    image: shaikmustafa/paytm:bus
+    ports:
+      - "2233:80"
+
+  bank:
+    container_name: bankcontainer
+    image: shaikmustafa/paytm:bank
+    ports:
+      - "3344:80"
