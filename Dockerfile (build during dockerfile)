@@ -1,0 +1,18 @@
+services:
+  dineout:
+    container_name: dineoutcontainer
+    build: ./dineout
+    ports:
+      - "2001:80"
+
+  food:
+    container_name: foodcontainer
+    build: ./food
+    ports:
+      - "2002:80"
+
+  insta:
+    container_name: instaconteiner
+    build: ./insta
+    ports:
+      - "2003:80"
