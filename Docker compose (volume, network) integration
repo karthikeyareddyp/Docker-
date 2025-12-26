@@ -1,0 +1,32 @@
+services:
+  aws:
+    container_name: awscontainer
+    build: ./aws
+    ports:
+      - "1001:80"
+    volumes:
+      - awsvolume:/usr/local/apache2/htdocs/
+    networks:
+      - awsnetwork
+      - azurenetwork
+
+  azure:
+    container_name: azurecontainer
+    build: ./azure
+    ports:
+      - "1002:80"
+    volumes:
+      - azurevolume:/usr/local/apache2/htdocs/
+    networks:
+      - azurenetwork
+      - awsnetwork
+
+volumes:
+  awsvolume:
+  azurevolume:
+
+networks:
+  awsnetwork:
+    driver: bridge
+  azurenetwork:
+    driver: bridge
