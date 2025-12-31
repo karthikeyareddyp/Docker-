@@ -1,0 +1,10 @@
+FROM node:19-alpine AS flm
+WORKDIR /app
+COPY package *. json . /
+RUN npm install
+COPY . .
+
+FROM flm as final
+RUN npm install -- production
+COPY . .
+CMD ["node", "index. js"]
