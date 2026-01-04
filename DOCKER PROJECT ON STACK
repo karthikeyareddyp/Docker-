@@ -1,0 +1,62 @@
+pipeline {
+    agent {
+        node {
+            label 'manager'  #configure node in jenkin (the server which as be as node java should be installed)
+        }
+    }
+        tools {
+            maven 'maven' # configure maven in Jenkins 
+        }
+        stages {
+            stage ("code") {
+                steps {
+                    git "https://github.com/karthikeyareddyp/dockerwebapp.git" 
+                }
+            }
+            stage ("CQA") {                 #create a sonra container in the manager server and access it 
+                steps {
+                     withSonarQubeEnv("sonar") {
+                         sh "mvn clean verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -Dsonar.projectKey=myproject"
+                     }
+                }
+            }
+            stage ("build") {       #based on the compose file need to copy the files to the path
+                steps {
+                    sh "mvn clean package"
+                    sh "mkdir -p Docker-app/target"
+                    sh "cp target/*.war Docker-app/target/ROOT.war"
+                }
+            }
+            stage ("image") { 
+                steps {
+                    sh "docker build -t appimage Docker-app"
+                    sh "docker build -t dbimage Docker-app" 
+                }
+            }
+            stage ("image scan") {  #install trivy in the manager 
+                steps {
+                sh "trivy image appimage"
+                sh "trivy image dbimage"
+                }
+            }
+            stage ("tag ") {
+                steps {
+                    sh "docker tag appimage karthikeyareddyp/mynewrepo:appimage"
+                    sh "docker tag dbimage karthikeyareddyp/mynewrepo:dbimage"
+                }
+            }
+            stage ("push") {
+                steps {
+                    withDockerRegistry(credentialsId: '4b87806c-26b5-4ec7-9a0f-d0d35a24ed71') {
+                        sh "docker push karthikeyareddyp/mynewrepo:appimage"
+                        sh "docker push karthikeyareddyp/mynewrepo:dbimage"
+                    }
+                }
+            }
+            stage ("deploy") {
+                steps {
+                    sh "docker stack deploy flm --compose-file=compose.yml"
+                }
+            }
+        }
+    }
